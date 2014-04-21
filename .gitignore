@@ -55,3 +55,9 @@ docs/_build/
 # SQLite3 database
 *.sqlite3
 
+#Local settings for project
+local_settings.py
+
+#PyCharm config files
+.idea/
+
