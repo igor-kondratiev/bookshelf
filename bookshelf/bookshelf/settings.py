@@ -1,9 +1,14 @@
 # Django settings for bookshelf project.
 
+import os
+
+
+BASE_DIR = os.path.join(os.path.abspath(__file__), '..')
+
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-LOG_FILENAME = 'bookshelf.log'
+LOG_FILENAME = os.path.join(BASE_DIR, 'bookshelf.log')
 
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
