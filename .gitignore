@@ -7,7 +7,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-env/
+.env/
 bin/
 build/
 develop-eggs/
@@ -51,4 +51,7 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# SQLite3 database
+*.sqlite3
 
