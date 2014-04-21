@@ -3,6 +3,8 @@
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+LOG_FILENAME = 'bookshelf.log'
+
 ADMINS = (
     # ('Your Name', 'your_email@example.com'),
 )
@@ -128,33 +130,22 @@ INSTALLED_APPS = (
     'south'
 )
 
-# A sample logging configuration. The only tangible logging
-# performed by this configuration is to send an email to
-# the site admins on every HTTP 500 error when DEBUG=False.
-# See http://docs.djangoproject.com/en/dev/topics/logging for
-# more details on how to customize your logging configuration.
+
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse'
-        }
-    },
     'handlers': {
-        'mail_admins': {
+        'basic': {
             'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'django.utils.log.AdminEmailHandler'
-        }
-    },
-    'loggers': {
-        'django.request': {
-            'handlers': ['mail_admins'],
-            'level': 'ERROR',
-            'propagate': True,
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_FILENAME,
+            'maxBytes': 100e6,
+            'backupCount': 3,
         },
-    }
+    },
+    'root': {
+        'handlers': ['basic'],
+        'level': 'ERROR'
+    },
 }
 
 try:
