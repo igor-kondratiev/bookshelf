@@ -1,0 +1,2 @@
+class BookReader(object):
+    pass
