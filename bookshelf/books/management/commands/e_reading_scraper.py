@@ -84,8 +84,8 @@ class Command(BaseCommand):
             if not os.path.exists(base_dir):
                 os.mkdir(base_dir)
 
-            base_filename = u"{0}.txt".format(book['id'])
-            filename = os.path.join(base_dir, base_filename)
+            base_filename = os.path.join(self.BOOKS_SUBDIR, u"{0}.txt".format(book['id']))
+            filename = os.path.join(settings.BOOKS_DIR, base_filename)
             with open(filename, 'w') as f:
                 f.write(response)
 
