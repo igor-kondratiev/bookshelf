@@ -17,9 +17,11 @@ class BookReader(object):
         self.filename = os.path.join(settings.BOOKS_DIR, book.text_file)
         self.id = book.pk
 
-        self.words_count = 0
         self.words = {}
-        self._read_book()
+        try:
+            self._read_book()
+        except:
+            print "Failed to read book {0}".format(book.pk)
 
         super(BookReader, self).__init__()
 
@@ -66,4 +68,8 @@ class BookReader(object):
 
     @property
     def words_list(self):
-        return self.words.keys()
+        return list(self.words.keys())
+
+    @property
+    def words_count(self):
+        return len(self.words)

@@ -41,5 +41,27 @@ class Book(models.Model):
     genres = models.ManyToManyField(BookGenre)
     text_file = models.CharField(max_length=64, blank=True)
 
+    def get_similar_books(self, count):
+        result = list(BookDistance.objects.filter(first_book=self).order_by('distance')[:count])
+        result.extend(list(BookDistance.objects.filter(second_book=self).order_by('distance')[:count]))
+        result.sort(key=lambda x: x.distance)
+        result = result[:count]
+
+        books = []
+        for distance in result:
+            if distance.first_book == self:
+                books.append(distance.second_book)
+            else:
+                books.append(distance.first_book)
+
+        return books
+
+
     def __unicode__(self):
         return u'{0}. {1}'.format(self.author, self.caption)
+
+
+class BookDistance(models.Model):
+    first_book = models.ForeignKey(Book, related_name='first_book')
+    second_book = models.ForeignKey(Book, related_name='second_book')
+    distance = models.FloatField()
