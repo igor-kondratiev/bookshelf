@@ -1,7 +1,6 @@
 # coding=utf-8
 import os
 import time
-import traceback
 import urllib2
 
 from BeautifulSoup import BeautifulSoup
@@ -13,6 +12,8 @@ from books.models import Author, BookGenre, Book
 
 
 class Command(BaseCommand):
+
+    SCRAPER_UID = 'E-READING'
 
     BASE_URL = 'http://www.e-reading.ws'
 
@@ -34,13 +35,14 @@ class Command(BaseCommand):
             book['id']
         )
 
-    @staticmethod
-    def _save_book(book):
+    def _save_book(self, book):
         author = Author.get_or_create_author(book['author'])
         db_book = Book(
             author=author,
             caption=book['caption'],
-            text_file=book['filename']
+            text_file=book['filename'],
+            source=self.SCRAPER_UID,
+            remote_id=book['id']
         )
         db_book.save()
 
@@ -92,6 +94,7 @@ class Command(BaseCommand):
             book['filename'] = base_filename
         else:
             print u"Ссылка на скачивание txt файла не найдена для книги {0}".format(book['id'])
+            return None
 
         time.sleep(0.1)
 
@@ -118,10 +121,12 @@ class Command(BaseCommand):
                 print u"К сожалению, раздел пуст."
                 continue
 
-            for book in books_list:
+            for i, book in enumerate(books_list):
                 real_book = self._parse_book(book)
-                self._save_book(real_book)
+                if real_book:
+                    self._save_book(real_book)
 
-                print self._repr_book(real_book)
+                    # print self._repr_book(real_book)
+                print u"Обработано {0}/{1} книг".format(i+1, len(books_list))
 
             time.sleep(0.1)
