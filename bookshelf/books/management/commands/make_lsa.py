@@ -21,6 +21,8 @@ class Command(BaseCommand):
         self.s = None
         self.vt = None
 
+        self.valuable_count = 0
+
         self.books_count = self.BOOKS_TO_PROCESS
 
         super(Command, self).__init__()
@@ -41,8 +43,8 @@ class Command(BaseCommand):
         print "SVD done."
 
         s_count = self.s.shape[0]
-        valuable_count = (s_count + 1) / 2
-        for i in range(valuable_count, s_count):
+        self.valuable_count = (s_count + 1) / 2
+        for i in range(self.valuable_count, s_count):
             self.s[i] = 0
 
         self.a = dot(dot(self.u, diag(self.s)), self.vt)
@@ -89,15 +91,19 @@ class Command(BaseCommand):
 
         print 'svd done. len(s) = {0}'.format(self.s.shape)
 
+        distances = []
         for i in range(self.books_count):
             for j in range(i + 1, self.books_count):
                 distance = 0.0
-                for k in range(len(self.keys)):
-                    distance += (self.a[k, i] - self.a[k, j]) * (self.a[k, i] - self.a[k, j])
+                for k in range(self.valuable_count):
+                    distance += (self.vt[k, i] - self.vt[k, j]) * (self.vt[k, i] - self.vt[k, j])
                 distance = pow(distance, 0.5)
                 db_distance = BookDistance(
                     first_book=readers[i].db_book,
                     second_book=readers[j].db_book,
                     distance=distance
                 )
-                db_distance.save()
+                distances.append(db_distance)
+
+        print "Distance calculated. Saving..."
+        BookDistance.objects.bulk_create(distances)
