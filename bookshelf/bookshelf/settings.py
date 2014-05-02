@@ -91,6 +91,7 @@ STATICFILES_FINDERS = (
 )
 
 BOOKS_DIR = os.path.join(MEDIA_ROOT, 'books')
+BOOK_IMAGES_DIR = os.path.join(MEDIA_ROOT, 'images')
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'kjm4iv0k(*tyiv6y3j_fsr#1tp1j*9vzj8r0vpt#nl)jx8@+bq'

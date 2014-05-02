@@ -1,3 +1,4 @@
+# coding=utf-8
 from django.db import models
 
 
@@ -40,6 +41,10 @@ class Book(models.Model):
     caption = models.CharField(max_length=128)
     genres = models.ManyToManyField(BookGenre)
     text_file = models.CharField(max_length=64, blank=True)
+
+    # Тут храним данные о том, какой скрейпер притащил книжку, и ее идентификатор
+    source = models.CharField(max_length=64, blank=True, null=True)
+    remote_id = models.CharField(max_length=128, blank=True, null=True)
 
     def get_similar_books(self, count):
         result = list(BookDistance.objects.filter(first_book=self).order_by('distance')[:count])
