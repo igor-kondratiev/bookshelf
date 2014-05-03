@@ -1,4 +1,5 @@
-from math import isinf
+# coding=utf-8
+from math import isinf, sqrt
 from numpy import zeros, sum, dot, diag
 from numpy.linalg import svd
 from numpy.ma import log
@@ -94,10 +95,24 @@ class Command(BaseCommand):
         distances = []
         for i in range(self.books_count):
             for j in range(i + 1, self.books_count):
-                distance = 0.0
+
+                #distance = 0.0
+                #for k in range(self.valuable_count):
+                #    distance += (self.vt[k, i] - self.vt[k, j]) * (self.vt[k, i] - self.vt[k, j])
+                #distance = pow(distance, 0.5)
+
+                # Косинусная мера
+                x2 = 0
+                y2 = 0
+                xy = 0
                 for k in range(self.valuable_count):
-                    distance += (self.vt[k, i] - self.vt[k, j]) * (self.vt[k, i] - self.vt[k, j])
-                distance = pow(distance, 0.5)
+                    x2 += self.vt[k, i] * self.vt[k, i]
+                    y2 += self.vt[k, j] * self.vt[k, j]
+                    xy += self.vt[k, i] * self.vt[k, j]
+                x = sqrt(x2)
+                y = sqrt(y2)
+
+                distance = xy / (x*y)
                 db_distance = BookDistance(
                     first_book=readers[i].db_book,
                     second_book=readers[j].db_book,
