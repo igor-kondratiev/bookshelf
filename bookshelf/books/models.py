@@ -46,6 +46,9 @@ class Book(models.Model):
     source = models.CharField(max_length=64, blank=True, null=True)
     remote_id = models.CharField(max_length=128, blank=True, null=True)
 
+    # Кластер, в который попала книжка
+    cluster_id = models.IntegerField(null=True, default=None)
+
     def get_similar_books(self, count):
         result = list(BookDistance.objects.filter(first_book=self).order_by('distance')[:count])
         result.extend(list(BookDistance.objects.filter(second_book=self).order_by('distance')[:count]))
