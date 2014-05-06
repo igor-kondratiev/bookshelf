@@ -1,4 +1,6 @@
 # coding=utf-8
+import pymongo
+
 from numpy import zeros, dot, diag
 from numpy.linalg import svd
 from scipy.cluster.vq import kmeans, vq, whiten
@@ -13,6 +15,8 @@ class Command(BaseCommand):
     BOOKS_TO_PROCESS = 100
     CLUSTERS_COUNT = 20
 
+    MONGODB_NAME = 'bookshelf'
+
     def __init__(self):
         self.words_dict = {}
         self.keys = []
@@ -25,6 +29,12 @@ class Command(BaseCommand):
         self.valuable_count = 0
 
         self.books_count = self.BOOKS_TO_PROCESS
+
+        self.mongodb = None
+        try:
+            self.mongodb = pymongo.Connection()[self.MONGODB_NAME]
+        except Exception as e:
+            print 'Не удалось подключится к Mongo: ' + str(e)
 
         super(Command, self).__init__()
 
@@ -48,7 +58,7 @@ class Command(BaseCommand):
 
         readers = []
         for book in books:
-            reader = BookReader(book)
+            reader = BookReader(book, self.mongodb)
             if reader.words_count == 0:
                 continue
 

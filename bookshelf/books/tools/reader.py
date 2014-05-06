@@ -12,7 +12,12 @@ class BookReader(object):
     BOOKS_ENCODING = 'windows-1251'
     PUNCTUATION = string.punctuation
 
-    def __init__(self, book):
+    MONGODB_SCHEMA_VERSION = '1'
+    MONGODB_COLLECTION_NAME = 'parsed_books_data'
+
+    def __init__(self, book, mongodb=None):
+        self.mongodb = mongodb
+
         self.db_book = book
         self.filename = os.path.join(settings.BOOKS_DIR, book.text_file)
         self.id = book.pk
@@ -20,8 +25,8 @@ class BookReader(object):
         self.words = {}
         try:
             self._read_book()
-        except:
-            print "Failed to read book {0}".format(book.pk)
+        except Exception as e:
+            print "Failed to read book {0}: {1}".format(book.pk, e)
 
         super(BookReader, self).__init__()
 
@@ -34,6 +39,18 @@ class BookReader(object):
             return None
 
     def _read_book(self):
+        # Сначал пробуем достать из монго
+        if self.mongodb:
+            collection = self.mongodb[self.MONGODB_COLLECTION_NAME]
+            book_data = collection.find_one({'book_id': self.db_book.pk})
+            if book_data:
+                if book_data['schema_version'] == self.MONGODB_SCHEMA_VERSION:
+                    self.words = book_data['words']
+                    return
+                else:
+                    collection.remove(book_data)
+
+        # Если не вышло - парсим из файла
         with open(self.filename, 'r') as f:
             raw_lines = f.readlines()
 
@@ -58,6 +75,16 @@ class BookReader(object):
         for token in words_candidates.iterkeys():
             if not token in STOPWORDS_LIST and words_candidates[token] > 1:
                 self.words[token] = words_candidates[token]
+
+        # И сохраним в монго на будущее
+        if self.mongodb:
+            collection = self.mongodb[self.MONGODB_COLLECTION_NAME]
+            book_data = {
+                'book_id': self.db_book.pk,
+                'schema_version': self.MONGODB_SCHEMA_VERSION,
+                'words': self.words
+            }
+            collection.save(book_data)
 
     @staticmethod
     def _safe_stem(token):
