@@ -1,17 +1,22 @@
 # coding=utf-8
-from math import isinf, sqrt
-from numpy import zeros, sum, dot, diag
+from math import isinf
+
+import pymongo
+from numpy import zeros, sum
 from numpy.linalg import svd
 from numpy.ma import log
+from scipy.stats import spearmanr
+from django.core.management.base import BaseCommand
 
 from books.models import Book, BookDistance
 from books.tools.reader import BookReader
-from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
 
     BOOKS_TO_PROCESS = 100
+
+    MONGODB_NAME = 'bookshelf'
 
     def __init__(self):
         self.words_dict = {}
@@ -26,6 +31,12 @@ class Command(BaseCommand):
 
         self.books_count = self.BOOKS_TO_PROCESS
 
+        self.mongodb = None
+        try:
+            self.mongodb = pymongo.Connection()[self.MONGODB_NAME]
+        except Exception as e:
+            print 'Не удалось подключится к Mongo: ' + str(e)
+
         super(Command, self).__init__()
 
     def perform_tf_idf(self):
@@ -34,9 +45,10 @@ class Command(BaseCommand):
         rows, cols = self.a.shape
         for i in range(rows):
             for j in range(cols):
-                self.a[i, j] = (self.a[i, j] / words_per_doc[j]) * log(float(cols) / docs_per_word[i])
-                if isinf(self.a[i, j]):
-                    print "Infinity found!"
+                if words_per_doc[j] != 0:
+                    self.a[i, j] = (self.a[i, j] / words_per_doc[j]) * log(float(cols) / docs_per_word[i])
+                    if isinf(self.a[i, j]):
+                        print "Infinity found!"
 
     def perform_svd(self):
         self.u, self.s, self.vt = svd(self.a, full_matrices=False)
@@ -45,12 +57,6 @@ class Command(BaseCommand):
 
         s_count = self.s.shape[0]
         self.valuable_count = (s_count + 1) / 2
-        for i in range(self.valuable_count, s_count):
-            self.s[i] = 0
-
-        self.a = dot(dot(self.u, diag(self.s)), self.vt)
-
-        print "Rank reduced."
 
     def handle(self, *args, **options):
         books = Book.objects.all()[:self.BOOKS_TO_PROCESS]
@@ -58,7 +64,7 @@ class Command(BaseCommand):
 
         readers = []
         for book in books:
-            reader = BookReader(book)
+            reader = BookReader(book, self.mongodb)
             if reader.words_count == 0:
                 continue
 
@@ -77,7 +83,7 @@ class Command(BaseCommand):
 
         self.books_count = len(readers)
 
-        self.keys = [k for k in self.words_dict.keys()]
+        self.keys = [k for k in self.words_dict.keys() if len(self.words_dict[k]) > 1]
         self.keys.sort()
 
         self.a = zeros([len(self.keys), self.books_count])
@@ -95,24 +101,7 @@ class Command(BaseCommand):
         distances = []
         for i in range(self.books_count):
             for j in range(i + 1, self.books_count):
-
-                #distance = 0.0
-                #for k in range(self.valuable_count):
-                #    distance += (self.vt[k, i] - self.vt[k, j]) * (self.vt[k, i] - self.vt[k, j])
-                #distance = pow(distance, 0.5)
-
-                # Косинусная мера
-                x2 = 0
-                y2 = 0
-                xy = 0
-                for k in range(self.valuable_count):
-                    x2 += self.vt[k, i] * self.vt[k, i]
-                    y2 += self.vt[k, j] * self.vt[k, j]
-                    xy += self.vt[k, i] * self.vt[k, j]
-                x = sqrt(x2)
-                y = sqrt(y2)
-
-                distance = xy / (x*y)
+                distance, p = spearmanr(self.vt[:self.valuable_count, i], self.vt[:self.valuable_count, j])
                 db_distance = BookDistance(
                     first_book=readers[i].db_book,
                     second_book=readers[j].db_book,

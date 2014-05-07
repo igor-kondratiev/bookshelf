@@ -1,5 +1,6 @@
 # coding=utf-8
 from django.db import models
+from django.db.models import Q
 
 
 class Author(models.Model):
@@ -49,21 +50,20 @@ class Book(models.Model):
     # Кластер, в который попала книжка
     cluster_id = models.IntegerField(null=True, default=None)
 
-    def get_similar_books(self, count):
-        result = list(BookDistance.objects.filter(first_book=self).order_by('distance')[:count])
-        result.extend(list(BookDistance.objects.filter(second_book=self).order_by('distance')[:count]))
-        result.sort(key=lambda x: x.distance)
-        result = result[:count]
+    def get_similar_books(self, limit=None):
+        distances = BookDistance.objects.filter(Q(first_book=self) | Q(second_book=self)).filter(distance__gte=0.4).order_by('-distance')
+        if limit:
+            distances = distances[:limit]
+
+        # Так как книжек будет скорее всего немного, то
+        # пожертвуем памятью во благо скорости
+        distances = list(distances)
 
         books = []
-        for distance in result:
-            if distance.first_book == self:
-                books.append(distance.second_book)
-            else:
-                books.append(distance.first_book)
+        for dist in distances:
+            books.append(dist.first_book if dist.second_book == self else dist.second_book)
 
         return books
-
 
     def __unicode__(self):
         return u'{0}. {1}'.format(self.author, self.caption)
