@@ -41,14 +41,13 @@ class Book(models.Model):
     author = models.ForeignKey(Author)
     caption = models.CharField(max_length=128)
     genres = models.ManyToManyField(BookGenre)
+    description = models.TextField(null=True, blank=True)
+    image = models.CharField(max_length=64, null=True, blank=True)
     text_file = models.CharField(max_length=64, blank=True)
 
     # Тут храним данные о том, какой скрейпер притащил книжку, и ее идентификатор
     source = models.CharField(max_length=64, blank=True, null=True)
     remote_id = models.CharField(max_length=128, blank=True, null=True)
-
-    # Кластер, в который попала книжка
-    cluster_id = models.IntegerField(null=True, default=None)
 
     def get_similar_books(self, limit=None):
         distances = BookDistance.objects.filter(Q(first_book=self) | Q(second_book=self)).filter(distance__gte=0.4).order_by('-distance')
