@@ -1,5 +1,6 @@
 # coding=utf-8
 import time
+import traceback
 
 from BeautifulSoup import BeautifulSoup
 from books.models import Book, BookMark
@@ -92,12 +93,17 @@ class BrbScraper(object):
         search_list = self._get_search_results(book)
         book_link = self._fetch_link(search_list)
         if book_link:
+            self._make_delay()
             self.browser.open(book_link)
             soup = BeautifulSoup(self.browser.response().read())
             good, bad = self._fetch_marks(soup)
+
+            good = float(good)
+            bad = float(bad)
+
             mark = 0.0
-            if good + bad >0:
-                mark = float(good) / float(good + bad)
+            if good + bad != 0:
+                mark = BookMark.MAX_MARK * good / (good + bad)
 
             db_mark, _ = BookMark.objects.get_or_create(user=self.user, book=book)
             db_mark.mark = mark
@@ -109,9 +115,12 @@ class BrbScraper(object):
 
     def perform_scrape(self):
         for i, book in enumerate(self.books):
-            self._process_book(book)
-            if (i + 1) % 10 == 0:
-                print '{0} of {1} books processed'.format(i+1, len(self.books))
+            print 'processing book {0}'.format(book)
+            try:
+                self._process_book(book)
+            except:
+                traceback.print_exc()
+            print '{0} of {1} books processed'.format(i+1, len(self.books))
             self._make_delay()
 
         print '{0} books processed successfully, {1} books was not found.'.format(self._success_count, self._fail_count)
