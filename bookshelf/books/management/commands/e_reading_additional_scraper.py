@@ -46,7 +46,7 @@ class Command(BaseCommand):
 
         description = book_soup.find('span', {'itemprop': 'description'})
         if description:
-            print description.contents
+            print description.contents[0]
         else:
             print u'Failed to fetch description for book {0}. {1}.'.format(book.author, book.caption)
 

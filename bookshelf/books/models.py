@@ -1,4 +1,5 @@
 # coding=utf-8
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Q
 
@@ -72,3 +73,15 @@ class BookDistance(models.Model):
     first_book = models.ForeignKey(Book, related_name='first_book')
     second_book = models.ForeignKey(Book, related_name='second_book')
     distance = models.FloatField()
+
+    class Meta:
+        unique_together = ['first_book', 'second_book']
+
+
+class BookMark(models.Model):
+    user = models.ForeignKey(User)
+    book = models.ForeignKey(Book)
+    mark = models.FloatField()
+
+    class Meta:
+        unique_together = ['user', 'book']
