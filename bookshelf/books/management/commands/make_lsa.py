@@ -98,6 +98,7 @@ class Command(BaseCommand):
 
         print 'svd done. len(s) = {0}'.format(self.s.shape)
 
+        BookDistance.objects.all().delete()
         distances = []
         for i in range(self.books_count):
             for j in range(i + 1, self.books_count):
