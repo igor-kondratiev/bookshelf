@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from books.models import BookMark
-from books.predictors.hyb import HybCosItemPredictor
+from books.predictors.item import CosineItemSimilarityPredictor
 
 
 class Command(BaseCommand):
@@ -18,8 +18,6 @@ class Command(BaseCommand):
         ),
     )
 
-    USERNAME = 'e_reading'
-
     def __init__(self):
         super(Command, self).__init__()
 
@@ -28,7 +26,7 @@ class Command(BaseCommand):
         marks = list(BookMark.objects.filter(user=user))
         mse = 0.0
         count = 0
-        predictor = HybCosItemPredictor(user)
+        predictor = CosineItemSimilarityPredictor(user)
         for i, mark in enumerate(marks):
             real_mark = mark.mark
             predicted_mark = predictor.predict(mark.book)
@@ -40,4 +38,4 @@ class Command(BaseCommand):
         mse /= count
         rmse = sqrt(mse)
 
-        print 'RMSE for HybCosItemPredictor = {0}'.format(rmse)
+        print 'RMSE for CosineItemSimilarityPredictor = {0}'.format(rmse)

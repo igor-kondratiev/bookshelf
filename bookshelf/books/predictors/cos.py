@@ -1,5 +1,6 @@
 from math import sqrt
 from django.contrib.auth.models import User
+from django.db.models import Avg
 
 from books.models import BookMark
 
@@ -10,9 +11,11 @@ class CosineSimilarityPredictor(object):
         self.user = user
         self.similarities = {}
         self.marks = BookMark.objects.filter(user=user)
+        self.avg_mark = BookMark.objects.filter(user=user).aggregate(Avg('mark'))['mark__avg']
 
         users = User.objects.exclude(pk=self.user.pk)
         for u in users:
+            u_avg_mark = BookMark.objects.filter(user=u).aggregate(Avg('mark'))['mark__avg']
             x = 0.0
             y = 0.0
             xy = 0.0
@@ -22,9 +25,9 @@ class CosineSimilarityPredictor(object):
                     own_mark = self.marks.get(book=mark.book)
                 except:
                     continue
-                x += mark.mark * mark.mark
-                y += own_mark.mark * own_mark.mark
-                xy += mark.mark * own_mark.mark
+                x += (mark.mark - u_avg_mark) * (mark.mark - u_avg_mark)
+                y += (own_mark.mark - self.avg_mark) * (own_mark.mark - self.avg_mark)
+                xy += (mark.mark - u_avg_mark) * (own_mark.mark - self.avg_mark)
 
             cosine = 0
             if x > 0 and y > 0:
@@ -39,10 +42,14 @@ class CosineSimilarityPredictor(object):
         predicted_mark = 0.0
         total_weight = 0.0
         for mark in marks:
-            predicted_mark += self.similarities[mark.user] * mark.mark
-            total_weight += self.similarities[mark.user]
+            users_avg_mark = BookMark.objects.filter(user=mark.user).aggregate(Avg('mark'))['mark__avg']
+            cos = max(self.similarities[mark.user], 0)
+            predicted_mark += cos * (mark.mark - users_avg_mark)
+            total_weight += cos
 
-        if total_weight > 0:
+        if total_weight != 0:
             predicted_mark /= total_weight
+
+        predicted_mark += self.avg_mark
 
         return predicted_mark

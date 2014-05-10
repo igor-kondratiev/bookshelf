@@ -9,3 +9,4 @@ class AveragePredictor(object):
 
     def predict(self, book, user):
         return BookMark.objects.filter(book=book).exclude(user=user).aggregate(Avg('mark'))['mark__avg']
+        # return BookMark.objects.filter(user=user).exclude(book=book).aggregate(Avg('mark'))['mark__avg']
