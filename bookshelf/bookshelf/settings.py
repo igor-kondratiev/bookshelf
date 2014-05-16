@@ -113,6 +113,18 @@ MIDDLEWARE_CLASSES = (
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
 )
 
+TEMPLATE_CONTEXT_PROCESSORS = (
+    "django.contrib.auth.context_processors.auth",
+    "django.core.context_processors.debug",
+    "django.core.context_processors.i18n",
+    "django.core.context_processors.media",
+    "django.contrib.messages.context_processors.messages",
+    "books.context_processors.authors_processor",
+    "books.context_processors.genres_processor",
+    "books.context_processors.random_book_processor",
+    "books.context_processors.settings_processor",
+)
+
 ROOT_URLCONF = 'bookshelf.urls'
 
 # Python dotted path to the WSGI application used by Django's runserver.
