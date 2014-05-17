@@ -1,6 +1,8 @@
+from django.contrib.auth import authenticate, login, logout
+from django.core.urlresolvers import reverse
 from django.db.models import Avg, Count
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 from books.models import Book
 
@@ -20,3 +22,21 @@ def book_view(request, book_id):
 
 def authors_books_view(request, author_id):
     return HttpResponse()
+
+
+def login_view(request):
+    if request.method != "POST":
+        return redirect(reverse('home'))
+
+    username = request.POST.get('username', '')
+    password = request.POST.get('password', '')
+    user = authenticate(username=username, password=password)
+    if user is not None and user.is_active:
+        login(request, user)
+
+    return redirect(reverse('home'))
+
+
+def logout_view(request):
+    logout(request)
+    return redirect(reverse('home'))

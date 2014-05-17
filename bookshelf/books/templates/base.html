@@ -1,7 +1,7 @@
 {% load staticfiles %}
 {% load url from future %}
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" xmlns="http://www.w3.org/1999/html">
   <head>
     <meta charset="utf-8">
     <title>{% block title %}Bookshelf - книги на любой вкус{% endblock %}</title>
@@ -40,7 +40,7 @@
 	<div class="span12">
         <div class="pull-right" style="margin-right: 10px">
             <span class="text-muted">
-                Добро пожаловать на книжную полку{% if request.user and request.user.is_authenticated %}, {{ request.user.username }}! <a href="#" style="color: #363f4a">Выйти</a>{% else %}!{% endif %}
+                Добро пожаловать на книжную полку{% if request.user and request.user.is_authenticated %}, {{ request.user.username }}! <a href="{% url 'logout' %}" style="color: #363f4a">Выйти</a>{% else %}!{% endif %}
             </span>
         </div>
     </div>
@@ -74,12 +74,14 @@
 			<h3>Авторизация</h3>
 		  </div>
 		  <div class="modal-body">
-			<form class="form-horizontal loginFrm">
-				<input type="text" id="inputEmail" placeholder="Логин">
-				<input type="password" id="inputPassword" placeholder="Пароль">
+			<form class="form-horizontal loginFrm" action="{% url 'login' %}" method="POST">
+                {% csrf_token %}
+				<input type="text" id="inputEmail" placeholder="Логин" name="username">
+				<input type="password" id="inputPassword" placeholder="Пароль" name="password">
+                <br/>
+                <button type="submit" class="btn btn-success" name="login" id="login-button">Войти</button>
+			    <button class="btn btn-warning" data-dismiss="modal" aria-hidden="true">Отмена</button>
 			</form>
-			<button type="submit" class="btn btn-success">Войти</button>
-			<button class="btn btn-warning" data-dismiss="modal" aria-hidden="true">Отмена</button>
 		  </div>
 	</div>
     </div>
