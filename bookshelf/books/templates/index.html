@@ -12,10 +12,10 @@
                     {% for book in popular_books|slice:":4" %}
                         <li class="span3">
                             <div class="thumbnail">
-			                    <img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/>
+			                    <a href="{% url 'book' book.pk %}"><img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/></a>
 			                    <div class="caption" style="text-align:center">
-                                    <p>{{ book.author }}</p>
-			                        <h6>{{ book.caption }}</h6>
+                                    <a href="{% url 'author' book.author.pk %}" style="color: #000810; font-weight: bold;"><p>{{ book.author }}</p></a>
+			                        <a href="{% url 'book' book.pk %}"><h5>{{ book.caption }}</h5></a>
 			                    </div>
 		                    </div>
                         </li>
@@ -27,10 +27,10 @@
                     {% for book in popular_books|slice:"4:8" %}
                         <li class="span3">
                             <div class="thumbnail">
-			                    <img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/>
+			                    <a href="{% url 'book' book.pk %}"><img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/></a>
 			                    <div class="caption" style="text-align:center">
-                                    <p>{{ book.author }}</p>
-			                        <h6>{{ book.caption }}</h6>
+                                    <a href="{% url 'author' book.author.pk %}" style="color: #000810; font-weight: bold;"><p>{{ book.author }}</p></a>
+			                        <a href="{% url 'book' book.pk %}"><h5>{{ book.caption }}</h5></a>
 			                    </div>
 		                    </div>
                         </li>
@@ -42,10 +42,10 @@
                     {% for book in popular_books|slice:"8:12" %}
                         <li class="span3">
                             <div class="thumbnail">
-			                    <img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/>
+			                    <a href="{% url 'book' book.pk %}"><img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/></a>
 			                    <div class="caption" style="text-align:center">
-                                    <p>{{ book.author }}</p>
-			                        <h6>{{ book.caption }}</h6>
+                                    <a href="{% url 'author' book.author.pk %}" style="color: #000810; font-weight: bold;"><p>{{ book.author }}</p></a>
+			                        <a href="{% url 'book' book.pk %}"><h5>{{ book.caption }}</h5></a>
 			                    </div>
 		                    </div>
                         </li>
@@ -61,10 +61,10 @@
 		{% for book in readable_books %}
             <li class="span3">
                 <div class="thumbnail">
-			        <img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/>
+			        <a href="{% url 'book' book.pk %}"><img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/></a>
 			        <div class="caption" style="text-align:center">
-                        <p>{{ book.author }}</p>
-			            <h6>{{ book.caption }}</h6>
+                        <a href="{% url 'author' book.author.pk %}" style="color: #000810; font-weight: bold;"><p>{{ book.author }}</p></a>
+			            <a href="{% url 'book' book.pk %}"><h5>{{ book.caption }}</h5></a>
 			        </div>
 		        </div>
             </li>

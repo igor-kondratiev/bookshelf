@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load url from future %}
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -38,7 +39,9 @@
 <div id="welcomeLine" class="row">
 	<div class="span12">
         <div class="pull-right" style="margin-right: 10px">
-            <span class="text-muted">Добро пожаловать на книжную полку!</span>
+            <span class="text-muted">
+                Добро пожаловать на книжную полку{% if request.user and request.user.is_authenticated %}, {{ request.user.username }}! <a href="#" style="color: #363f4a">Выйти</a>{% else %}!{% endif %}
+            </span>
         </div>
     </div>
 </div>
@@ -61,6 +64,7 @@
 		    </select>
 		    <button type="submit" id="submitButton" class="btn btn-primary">Найти</button>
     </form>
+      {% if not request.user or not request.user.is_authenticated %}
     <div id="topMenu" class="pull-right navbar-search">
     <a href="#" role="button" style="{padding-right:0;}"><span class="btn btn-link">Регистрация</span></a>
 	<a href="#login" role="button" data-toggle="modal" style="{padding-right:0;}"><span class="btn btn-success">Войти</span></a>
@@ -79,6 +83,7 @@
 		  </div>
 	</div>
     </div>
+      {% endif %}
   </div>
 </div>
 </div>
@@ -113,10 +118,10 @@
             <h6 style="text-align: center">СЛУЧАЙНЫЕ КНИГИ:</h6>
             {% for book in random_books %}
                 <div class="thumbnail">
-			        <img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/>
+			        <a href="{% url 'book' book.pk %}"><img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/></a>
 			        <div class="caption" style="text-align:center">
-                        <p>{{ book.author }}</p>
-			            <h6>{{ book.caption }}</h6>
+                        <a href="{% url 'author' book.author.pk %}" style="color: #000810; font-weight: bold;"><p>{{ book.author }}</p></a>
+			            <a href="{% url 'book' book.pk %}"><h5>{{ book.caption }}</h5></a>
 			        </div>
 		        </div><br/>
             {% endfor %}
