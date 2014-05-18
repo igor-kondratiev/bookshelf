@@ -66,7 +66,7 @@
     </form>
       {% if not request.user or not request.user.is_authenticated %}
     <div id="topMenu" class="pull-right navbar-search">
-    <a href="#" role="button" style="{padding-right:0;}"><span class="btn btn-link">Регистрация</span></a>
+    <a href="{% url 'registration' %}" role="button" style="{padding-right:0;}"><span class="btn btn-link">Регистрация</span></a>
 	<a href="#login" role="button" data-toggle="modal" style="{padding-right:0;}"><span class="btn btn-success">Войти</span></a>
 	<div id="login" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
 		  <div class="modal-header">
@@ -100,21 +100,21 @@
 		<ul id="sideManu" class="nav nav-tabs nav-stacked">
 			<li class="subMenu open"><a href="#">Книги по жанрам</a>
 				<ul>
-    				<li><a href="#"><i class="icon-chevron-right"></i>Все жанры ({{ genres_count }})</a></li>
+    				<li><a href="{% url 'genres_list' %}"><i class="icon-chevron-right"></i>Все жанры ({{ genres_count }})</a></li>
 				    {% for genre in genres_list %}
-                        <li><a href="#"><i class="icon-chevron-right"></i>{{ genre.name }} ({{ genre.books_count }})</a></li>
+                        <li><a href="{% url 'genre' genre.pk %}"><i class="icon-chevron-right"></i>{{ genre.name }} ({{ genre.books_count }})</a></li>
                     {% endfor %}
 				</ul>
 			</li>
-			<li class="subMenu"><a href="#">Книги по авторам</a>
+			<li class="subMenu"><a href="{% url 'authors_list' %}">Книги по авторам</a>
 				<ul style="display:none">
                     <li><a href="#"><i class="icon-chevron-right"></i>Все авторы ({{ authors_count }})</a></li>
                     {% for author in authors_list %}
-                        <li><a href="#"><i class="icon-chevron-right"></i>{{ author.name }} ({{ author.books_count }})</a></li>
+                        <li><a href="{% url 'author' author.pk %}"><i class="icon-chevron-right"></i>{{ author.name }} ({{ author.books_count }})</a></li>
                     {% endfor %}
     			</ul>
 			</li>
-			<li><a href="#">Популярные книги</a></li>
+			<li><a href="{% url 'popular_books' %}">Популярные книги</a></li>
 		</ul>
 		<br/>
             <h6 style="text-align: center">СЛУЧАЙНЫЕ КНИГИ:</h6>

@@ -3,7 +3,7 @@
 
 {% block content %}
 			<div class="well well-small" style="height: 400px">
-			<h4>Популярные книги </h4>
+			<a href="{% url 'popular_books' %}"><h4>Популярные книги</h4></a>
 			<div class="row-fluid">
 			<div id="featured" class="carousel slide">
 			<div class="carousel-inner">
@@ -56,7 +56,7 @@
 			  </div>
 			  </div>
 		</div>
-		<h4>Самые читаемые книги</h4>
+		<a href="{% url 'readable_books' %}"><h4>Самые читаемые книги</h4></a>
         <ul class="thumbnails">
 		{% for book in readable_books %}
             <li class="span3">

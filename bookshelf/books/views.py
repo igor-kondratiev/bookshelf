@@ -24,6 +24,30 @@ def authors_books_view(request, author_id):
     return HttpResponse()
 
 
+def books_by_genre_view(request, genre_id):
+    return HttpResponse()
+
+
+def popular_books_view(request):
+    return HttpResponse()
+
+
+def readable_books_view(request):
+    return HttpResponse()
+
+
+def recommended_books_view(request):
+    return HttpResponse()
+
+
+def genres_list_view(request):
+    return HttpResponse()
+
+
+def authors_list_view(request):
+    return HttpResponse()
+
+
 def login_view(request):
     if request.method != "POST":
         return redirect(reverse('home'))
@@ -39,4 +63,8 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
+    return redirect(reverse('home'))
+
+
+def registration_view(request):
     return redirect(reverse('home'))
