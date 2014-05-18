@@ -3,11 +3,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db.models import Avg, Count
-from django.http import HttpResponse
+from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
 
 from books.forms import RegistrationForm
-from books.models import Book
+from books.models import Book, BookMark
 
 
 def home_view(request):
@@ -20,7 +20,15 @@ def home_view(request):
 
 
 def book_view(request, book_id):
-    return HttpResponse()
+    try:
+        book = Book.objects.get(pk=book_id)
+    except:
+        raise Http404()
+
+    related_books = book.get_similar_books(6)
+    book_mark = str(BookMark.objects.filter(book=book).aggregate(Avg('mark'))['mark__avg'])[:4]
+
+    return render(request, 'book_details.html', {'book': book, 'related_books': related_books, 'book_mark': book_mark})
 
 
 def authors_books_view(request, author_id):
