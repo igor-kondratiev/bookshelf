@@ -4,7 +4,7 @@
 <html lang="ru" xmlns="http://www.w3.org/1999/html">
   <head>
     <meta charset="utf-8">
-    <title>{% block title %}Bookshelf - книги на любой вкус{% endblock %}</title>
+    <title>{% block title %}Bookshelf - книги на будь-який смак{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -40,7 +40,7 @@
 	<div class="span12">
         <div class="pull-right" style="margin-right: 10px">
             <span class="text-muted">
-                Добро пожаловать на книжную полку{% if request.user and request.user.is_authenticated %}, {{ request.user.username }}! <a href="{% url 'logout' %}" style="color: #363f4a">Выйти</a>{% else %}!{% endif %}
+                Ласкаво просимо на книжну полицю{% if request.user and request.user.is_authenticated %}, {{ request.user.username }}! <a href="{% url 'logout' %}" style="color: #363f4a">Вийти.</a>{% else %}!{% endif %}
             </span>
         </div>
     </div>
@@ -57,30 +57,30 @@
         <h3 style="display: inline">The Bookshelf</h3>
     </a>
 		<form class="form-inline navbar-search" method="post" action="products.html" >
-            <input id="srchFld" class="srchTxt" type="text" placeholder="Поиск..." />
+            <input id="srchFld" class="srchTxt" type="text" placeholder="Пошук..." />
 	        <select class="srchTxt">
-		    	<option>Поиск по названию</option>
-			    <option>Поиск по автору</option>
+		    	<option>Пошук за назвою</option>
+			    <option>Пошук за автором</option>
 		    </select>
-		    <button type="submit" id="submitButton" class="btn btn-primary">Найти</button>
+		    <button type="submit" id="submitButton" class="btn btn-primary">Знайти</button>
     </form>
       {% if not request.user or not request.user.is_authenticated %}
     <div id="topMenu" class="pull-right navbar-search">
-    <a href="{% url 'registration' %}" role="button" style="{padding-right:0;}"><span class="btn btn-link">Регистрация</span></a>
-	<a href="#login" role="button" data-toggle="modal" style="{padding-right:0;}"><span class="btn btn-success">Войти</span></a>
+    <a href="{% url 'registration' %}" role="button" style="{padding-right:0;}"><span class="btn btn-link">Реєстрація</span></a>
+	<a href="#login" role="button" data-toggle="modal" style="{padding-right:0;}"><span class="btn btn-success">Увійти</span></a>
 	<div id="login" class="modal hide fade in" tabindex="-1" role="dialog" aria-labelledby="login" aria-hidden="false" >
 		  <div class="modal-header">
 			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-			<h3>Авторизация</h3>
+			<h3>Авторизація</h3>
 		  </div>
 		  <div class="modal-body">
 			<form class="form-horizontal loginFrm" action="{% url 'login' %}" method="POST">
                 {% csrf_token %}
-				<input type="text" id="inputEmail" placeholder="Логин" name="username">
+				<input type="text" id="inputEmail" placeholder="Логін" name="username">
 				<input type="password" id="inputPassword" placeholder="Пароль" name="password">
                 <br/>
-                <button type="submit" class="btn btn-success" name="login" id="login-button">Войти</button>
-			    <button class="btn btn-warning" data-dismiss="modal" aria-hidden="true">Отмена</button>
+                <button type="submit" class="btn btn-success" name="login" id="login-button">Увійти</button>
+			    <button class="btn btn-warning" data-dismiss="modal" aria-hidden="true">Скасувати</button>
 			</form>
 		  </div>
 	</div>
@@ -98,26 +98,26 @@
 <!-- Sidebar ================================================== -->
 	<div id="sidebar" class="span3">
 		<ul id="sideManu" class="nav nav-tabs nav-stacked">
-			<li class="subMenu open"><a href="#">Книги по жанрам</a>
+			<li class="subMenu open"><a href="#">Книги за жанрами</a>
 				<ul>
-    				<li><a href="{% url 'genres_list' %}"><i class="icon-chevron-right"></i>Все жанры ({{ genres_count }})</a></li>
+    				<li><a href="{% url 'genres_list' %}"><i class="icon-chevron-right"></i>Всі жанри ({{ genres_count }})</a></li>
 				    {% for genre in genres_list %}
                         <li><a href="{% url 'genre' genre.pk %}"><i class="icon-chevron-right"></i>{{ genre.name }} ({{ genre.books_count }})</a></li>
                     {% endfor %}
 				</ul>
 			</li>
-			<li class="subMenu"><a href="{% url 'authors_list' %}">Книги по авторам</a>
+			<li class="subMenu"><a href="{% url 'authors_list' %}">Книги за авторами</a>
 				<ul style="display:none">
-                    <li><a href="#"><i class="icon-chevron-right"></i>Все авторы ({{ authors_count }})</a></li>
+                    <li><a href="#"><i class="icon-chevron-right"></i>Всі автори ({{ authors_count }})</a></li>
                     {% for author in authors_list %}
                         <li><a href="{% url 'author' author.pk %}"><i class="icon-chevron-right"></i>{{ author.name }} ({{ author.books_count }})</a></li>
                     {% endfor %}
     			</ul>
 			</li>
-			<li><a href="{% url 'popular_books' %}">Популярные книги</a></li>
+			<li><a href="{% url 'popular_books' %}">Популярні книги</a></li>
 		</ul>
 		<br/>
-            <h6 style="text-align: center">СЛУЧАЙНЫЕ КНИГИ:</h6>
+            <h6 style="text-align: center">ВИПАДКОВІ КНИГИ:</h6>
             {% for book in random_books %}
                 <div class="thumbnail">
 			        <a href="{% url 'book' book.pk %}"><img src='{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}' alt="{{ book.caption }}" width="70%"/></a>
@@ -142,25 +142,25 @@
 	<div class="container">
 		<div class="row">
 			<div class="span3">
-				<h6>ПРОФИЛЬ</h6>
-				<a href="#">МОЙ ПРОФИЛЬ</a>
-				<a href="#">ЛИЧНЫЙ КАБИНЕТ</a>
+				<h6>ПРОФІЛЬ</h6>
+				<a href="#">МІЙ ПРОФІЛЬ</a>
+				<a href="#">ОСОБИСТИЙ КАБІНЕТ</a>
 			 </div>
 			<div class="span3">
-				<h6>ПОЛЕЗНАЯ ИНФОРМАЦИЯ</h6>
-				<a href="contact.html">КОНТАКТЫ</a>
-				<a href="register.html">РЕГИСТРАЦИЯ</a>
-				<a href="legal_notice.html">УСЛОВИЯ ИСПОЛЬЗОВАНИЯ</a>
-				<a href="faq.html">ПОМОЩЬ</a>
+				<h6>КОРИСНА ИНФОРМАЦІЯ</h6>
+				<a href="contact.html">КОНТАКТИ</a>
+				<a href="register.html">РЕЄСТРАЦІЯ</a>
+				<a href="legal_notice.html">УМОВИ ВИКОРИСТАННЯ</a>
+				<a href="faq.html">ДОПОМОГА</a>
 			 </div>
 			<div class="span3">
-				<h6>ССЫЛКИ</h6>
-				<a href="#">НОВЫЕ ДОБАВЛЕНИЯ</a>
-				<a href="#">ПОПУЛЯРНЫЕ КНИГИ</a>
-				<a href="#">РЕКОМЕНДУЕМЫЕ</a>
+				<h6>ПОСИЛАННЯ</h6>
+				<a href="#">НОВІ КНИГИ</a>
+				<a href="#">ПОПУЛЯРНІ КНИГИ</a>
+				<a href="#">РЕКОМЕНДОВАНІ</a>
 			 </div>
 			<div id="socialMedia" class="span3 pull-right">
-				<h6>СОЦИАЛЬНЫЕ СЕТИ</h6>
+				<h6>СОЦИАЛЬНІ МЕРЕЖІ</h6>
 				<a href="#"><img width="60" height="60" src='{% static "themes/images/facebook.png" %}' title="facebook" alt="facebook"/></a>
 				<a href="#"><img width="60" height="60" src='{% static "themes/images/twitter.png" %}' title="twitter" alt="twitter"/></a>
 				<a href="#"><img width="60" height="60" src='{% static "themes/images/youtube.png" %}' title="youtube" alt="youtube"/></a>

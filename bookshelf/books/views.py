@@ -1,9 +1,12 @@
+# coding=utf-8
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db.models import Avg, Count
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
 
+from books.forms import RegistrationForm
 from books.models import Book
 
 
@@ -67,4 +70,22 @@ def logout_view(request):
 
 
 def registration_view(request):
-    return redirect(reverse('home'))
+
+    # TODO: исправить отображение ошибок валидации
+
+    if request.method == "POST":
+        form = RegistrationForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+
+            User.objects.create_user(username, email, password)
+            auth_user = authenticate(username=form.cleaned_data['username'], password=form.cleaned_data['password'])
+            login(request, auth_user)
+
+            return redirect(reverse('home'))
+    else:
+        form = RegistrationForm()
+
+    return render(request, 'register.html', {'form': form})
