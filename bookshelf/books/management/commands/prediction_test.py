@@ -20,11 +20,11 @@ class Command(BaseCommand):
 
     # Список классов предикторов, которые нужно тестировать
     PREDICTORS = [
-        'books.predictors.ItemToItemCollaborativeCosinePredictor',
-        'books.predictors.ItemToItemCollaborativePiersonPredictor',
-        'books.predictors.ItemToItemLSAPredictor',
+        # 'books.predictors.ItemToItemCollaborativeCosinePredictor',
+        # 'books.predictors.ItemToItemCollaborativePiersonPredictor',
+        # 'books.predictors.ItemToItemLSAPredictor',
         'books.predictors.AverageBookMarkPredictor',
-        'books.predictors.UserToUserCollaborativeCosinePredictor',
+        # 'books.predictors.UserToUserCollaborativeCosinePredictor',
         'books.predictors.UserToUserCollaborativePiersonPredictor',
     ]
 
@@ -48,7 +48,8 @@ class Command(BaseCommand):
         self._predicted_count = {}
 
         # Загружаем книги и пользователей
-        self._users = list(User.objects.all().annotate(marks_count=Count('bookmark')).filter(marks_count__gte=7))
+        # self._users = list(User.objects.all().annotate(marks_count=Count('bookmark')).filter(marks_count__gte=7))
+        self._users = list(User.objects.all())
         self._users_dict = dict((user, index) for index, user in enumerate(self._users))
 
         self._books = list(Book.objects.all())

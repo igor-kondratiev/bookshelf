@@ -89,20 +89,22 @@ class UserToUserCollaborativeCosinePredictor(BasePredictor):
                 y = 0.0
                 x_dot_y = 0.0
 
+                count = 0
+
                 for k in range(len(self._books_dict)):
                     if self._matrix[i, k] > 0 and self._matrix[j, k] > 0:
                         x += self._matrix[i, k] * self._matrix[i, k]
                         y += self._matrix[j, k] * self._matrix[j, k]
                         x_dot_y += self._matrix[i, k] * self._matrix[j, k]
+                        count += 1
 
-                similarity = 0.0
-                if x > 0 and y > 0:
+                if x > 0 and y > 0 and count > 2:
                     x = sqrt(x)
                     y = sqrt(y)
                     similarity = x_dot_y / (x * y)
 
-                self._similarities_matrix[i, j] = similarity
-                self._similarities_matrix[j, i] = similarity
+                    self._similarities_matrix[i, j] = similarity
+                    self._similarities_matrix[j, i] = similarity
 
     def predict(self, user, book):
         """
@@ -132,7 +134,7 @@ class UserToUserCollaborativePiersonPredictor(BasePredictor):
     """
 
     # Минимальныцй уровень похожести для учета при прогнозировании
-    MINIMUM_SIMILARITY = 0.0
+    MINIMUM_SIMILARITY = 0.4
 
     def __init__(self, matrix, users_dict, books_dict):
         """
@@ -157,14 +159,17 @@ class UserToUserCollaborativePiersonPredictor(BasePredictor):
                 y = 0.0
                 x_dot_y = 0.0
 
+                count = 0
+
                 for k in range(len(self._books_dict)):
                     if self._matrix[i, k] > 0 and self._matrix[j, k] > 0:
                         x += (self._matrix[i, k] - self._average_marks[i]) * (self._matrix[i, k] - self._average_marks[i])
                         y += (self._matrix[j, k] - self._average_marks[j]) * (self._matrix[j, k] - self._average_marks[j])
                         x_dot_y += (self._matrix[i, k] - self._average_marks[i]) * (self._matrix[j, k] - self._average_marks[j])
+                        count += 1
 
                 similarity = 0.0
-                if x > 0 and y > 0:
+                if x > 0 and y > 0 and count > 2:
                     x = sqrt(x)
                     y = sqrt(y)
                     similarity = x_dot_y / (x * y)
@@ -190,7 +195,9 @@ class UserToUserCollaborativePiersonPredictor(BasePredictor):
         if total_weights > 0:
             predicted_mark /= total_weights
 
-        predicted_mark += self._average_marks[user_index]
+            predicted_mark += self._average_marks[user_index]
+        else:
+            predicted_mark = 0
 
         return predicted_mark
 
@@ -261,14 +268,17 @@ class ItemToItemCollaborativeCosinePredictor(BasePredictor):
                 y = 0.0
                 x_dot_y = 0.0
 
+                count = 0
+
                 for k in range(len(self._users_dict)):
                     if self._matrix[k, i] > 0 and self._matrix[k, j] > 0:
                         x += self._matrix[k, i] * self._matrix[k, i]
                         y += self._matrix[k, j] * self._matrix[k, j]
                         x_dot_y += self._matrix[k, i] * self._matrix[k, j]
+                        count += 1
 
                 similarity = 0.0
-                if x > 0 and y > 0:
+                if x > 0 and y > 0 and count > 2:
                     x = sqrt(x)
                     y = sqrt(y)
                     similarity = x_dot_y / (x * y)
@@ -329,14 +339,17 @@ class ItemToItemCollaborativePiersonPredictor(BasePredictor):
                 y = 0.0
                 x_dot_y = 0.0
 
+                count = 0
+
                 for k in range(len(self._users_dict)):
                     if self._matrix[k, i] > 0 and self._matrix[k, j] > 0:
                         x += (self._matrix[k, i] - self._average_marks[i]) * (self._matrix[k, i] - self._average_marks[i])
                         y += (self._matrix[k, j] - self._average_marks[j]) * (self._matrix[k, j] - self._average_marks[j])
                         x_dot_y += (self._matrix[k, i] - self._average_marks[i]) * (self._matrix[k, j] - self._average_marks[j])
+                        count += 1
 
                 similarity = 0.0
-                if x > 0 and y > 0:
+                if x > 0 and y > 0 and count > 2:
                     x = sqrt(x)
                     y = sqrt(y)
                     similarity = x_dot_y / (x * y)
@@ -362,7 +375,9 @@ class ItemToItemCollaborativePiersonPredictor(BasePredictor):
         if total_weights > 0:
             predicted_mark /= total_weights
 
-        predicted_mark += self._average_marks[book_index]
+            predicted_mark += self._average_marks[book_index]
+        else:
+            predicted_mark = 0
 
         return predicted_mark
 
