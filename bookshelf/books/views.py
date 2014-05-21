@@ -7,7 +7,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
 
 from books.forms import RegistrationForm
-from books.models import Book, BookMark
+from books.models import Author, Book, BookGenre, BookMark
 
 
 def home_view(request):
@@ -32,19 +32,45 @@ def book_view(request, book_id):
 
 
 def authors_books_view(request, author_id):
-    return HttpResponse()
+    try:
+        author = Author.objects.get(pk=author_id)
+    except:
+        raise Http404()
+
+    books_list = author.book_set.all()
+    return render(request, 'books_list.html', {
+        'books_list': books_list,
+        'title': 'Книги автора {0}'.format(author.name.encode('utf-8'))
+    })
 
 
 def books_by_genre_view(request, genre_id):
-    return HttpResponse()
+    try:
+        genre = BookGenre.objects.get(pk=genre_id)
+    except:
+        raise Http404()
+
+    books_list = genre.book_set.all()
+    return render(request, 'books_list.html', {
+        'books_list': books_list,
+        'title': '{0}'.format(genre.name.encode('utf-8'))
+    })
 
 
 def popular_books_view(request):
-    return HttpResponse()
+    books_list = Book.objects.annotate(mark=Avg('bookmark__mark')).exclude(mark=None).order_by('-mark')[:20]
+    return render(request, 'books_list.html', {
+        'books_list': books_list,
+        'title': 'Популярні книги'
+    })
 
 
 def readable_books_view(request):
-    return HttpResponse()
+    books_list = Book.objects.annotate(marks_count=Count('bookmark')).order_by('-marks_count')[:20]
+    return render(request, 'books_list.html', {
+        'books_list': books_list,
+        'title': 'Найбільше переглядів'
+    })
 
 
 def recommended_books_view(request):
@@ -52,11 +78,19 @@ def recommended_books_view(request):
 
 
 def genres_list_view(request):
-    return HttpResponse()
+    genres_list = BookGenre.objects.annotate(books_count=Count('book')) \
+                           .exclude(books_count=0) \
+                           .order_by('-books_count')
+
+    return render(request, 'genres_list.html', {'genres_list': genres_list})
 
 
 def authors_list_view(request):
-    return HttpResponse()
+    authors_list = Author.objects.annotate(books_count=Count('book')) \
+                         .exclude(books_count=0) \
+                         .order_by('-books_count')
+
+    return render(request, 'authors_list.html', {'authors_list': authors_list})
 
 
 def login_view(request):

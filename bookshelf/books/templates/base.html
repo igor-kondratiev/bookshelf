@@ -40,7 +40,7 @@
 	<div class="span12">
         <div class="pull-right" style="margin-right: 10px">
             <span class="text-muted">
-                Ласкаво просимо на книжну полицю{% if request.user and request.user.is_authenticated %}, {{ request.user.username }}! <a href="{% url 'logout' %}" style="color: #363f4a">Вийти.</a>{% else %}!{% endif %}
+                Ласкаво просимо на книжкову полицю{% if request.user and request.user.is_authenticated %}, {{ request.user.username }}! <a href="{% url 'logout' %}" style="color: #363f4a">Вийти.</a>{% else %}!{% endif %}
             </span>
         </div>
     </div>
@@ -108,7 +108,7 @@
 			</li>
 			<li class="subMenu"><a href="{% url 'authors_list' %}">Книги за авторами</a>
 				<ul style="display:none">
-                    <li><a href="#"><i class="icon-chevron-right"></i>Всі автори ({{ authors_count }})</a></li>
+                    <li><a href="{% url 'authors_list' %}"><i class="icon-chevron-right"></i>Всі автори ({{ authors_count }})</a></li>
                     {% for author in authors_list %}
                         <li><a href="{% url 'author' author.pk %}"><i class="icon-chevron-right"></i>{{ author.name }} ({{ author.books_count }})</a></li>
                     {% endfor %}
