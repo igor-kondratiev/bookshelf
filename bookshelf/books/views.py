@@ -1,5 +1,6 @@
 # coding=utf-8
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db.models import Avg, Count
@@ -28,7 +29,19 @@ def book_view(request, book_id):
     related_books = book.get_similar_books(6)
     book_mark = str(BookMark.objects.filter(book=book).aggregate(Avg('mark'))['mark__avg'])[:4]
 
-    return render(request, 'book_details.html', {'book': book, 'related_books': related_books, 'book_mark': book_mark})
+    users_mark = None
+    if request.user and request.user.is_authenticated():
+        try:
+            users_mark = str(BookMark.objects.get(book=book, user=request.user).mark)
+        except:
+            pass
+
+    return render(request, 'book_details.html', {
+        'book': book,
+        'related_books': related_books,
+        'book_mark': book_mark,
+        'users_mark': users_mark,
+    })
 
 
 def authors_books_view(request, author_id):
@@ -131,3 +144,24 @@ def registration_view(request):
         form = RegistrationForm()
 
     return render(request, 'register.html', {'form': form})
+
+
+@login_required
+def vote_book(request):
+    source = request.GET.get('from', reverse('home'))
+
+    book_id = request.GET.get('book_id')
+    if book_id:
+        print 'Here1'
+        mark = request.GET.get('mark')
+        if mark and 0 < int(mark) <= 10:
+            print 'Here2'
+            try:
+                book = Book.objects.get(pk=book_id)
+                db_mark = BookMark(user=request.user, book=book, mark=mark)
+                db_mark.save()
+                print 'done'
+            except Exception as e:
+                print str(e)
+
+    return redirect(source)

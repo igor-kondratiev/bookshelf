@@ -11,7 +11,8 @@
     			<img src="{{ settings.MEDIA_URL }}images/{% if book.image %}{{ book.image }}{% else %}default.jpg{% endif %}" style="width:100%" alt="{{ book.caption }}"/>
                 <br class="clr"/>
                 <br class="clr"/>
-                <p>Середня оцінка - <strong>{{ book_mark }}</strong></p>
+                <p><u>Середня оцінка</u></p>
+                <span id="avg-mark"></span>&nbsp;<strong>{{ book_mark }}</strong>
             </div>
 			  
 			<div class="span6">
@@ -21,6 +22,19 @@
 				<hr class="soft clr"/>
 
 				<p>{{ book.description }}</p>
+
+                {% if request.user and request.user.is_authenticated %}
+                    {% if users_mark %}
+                        <p>
+                            Ваша оцінка: <span id="own-mark"></span>&nbsp;<strong>{{ users_mark }}</strong>
+                        </p>
+                    {% else %}
+                        <p>
+                            Прочитали? Оцініть! <span id="own-mark-edit"></span>
+                        </p>
+                    {% endif %}
+                {% endif %}
+
 				<br class="clr"/>
 			</div>
 
@@ -57,4 +71,47 @@
                 </div>
             </div>
     </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'raty/js/jquery.raty.js' %}"></script>
+    <script>
+        $('#avg-mark').raty({
+            size      : 24,
+            starHalf  : '{% static "raty/img/star-half.png" %}',
+            starOff   : '{% static "raty/img/star-off.png" %}',
+            starOn    : '{% static "raty/img/star-on.png" %}',
+            score     : {{ book_mark }},
+            number    : 10,
+            readOnly  : true
+        });
+
+        {% if request.user and request.user.is_authenticated %}
+            {% if users_mark %}
+                $('#own-mark').raty({
+                    size      : 24,
+                    starHalf  : '{% static "raty/img/star-half.png" %}',
+                    starOff   : '{% static "raty/img/star-off.png" %}',
+                    starOn    : '{% static "raty/img/star-on.png" %}',
+                    score     : {{ users_mark }},
+                    number    : 10,
+                    readOnly  : true
+                });
+            {% else %}
+                $('#own-mark-edit').raty({
+                    size      : 24,
+                    starHalf  : '{% static "raty/img/star-half.png" %}',
+                    starOff   : '{% static "raty/img/star-off.png" %}',
+                    starOn    : '{% static "raty/img/star-on.png" %}',
+                    score     : 0,
+                    number    : 10,
+                    halfShow  : false,
+                    click: function(score, evt) {
+                            window.location = '{% url 'vote_book' %}?from={{ request.get_full_path }}&book_id={{ book.id }}&mark=' + score;
+                        }
+                });
+            {% endif %}
+
+        {% endif %}
+    </script>
 {% endblock %}
