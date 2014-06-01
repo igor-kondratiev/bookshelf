@@ -14,7 +14,7 @@ from books.tools.reader import BookReader
 
 class Command(BaseCommand):
 
-    BOOKS_TO_PROCESS = 200
+    BOOKS_TO_PROCESS = 500
 
     MONGODB_NAME = 'bookshelf'
 

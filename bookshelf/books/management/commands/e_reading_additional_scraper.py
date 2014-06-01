@@ -79,6 +79,12 @@ class Command(BaseCommand):
 
         book.save()
 
+    def _safe_process_book(self, book):
+        try:
+            self._process_book(book)
+        except Exception as e:
+            print str(e)
+
     @staticmethod
     def _make_delay():
         time.sleep(0.1)
@@ -88,5 +94,5 @@ class Command(BaseCommand):
         print '{0} books found to process'.format(len(books))
 
         for book in books:
-            self._process_book(book)
+            self._safe_process_book(book)
             self._make_delay()

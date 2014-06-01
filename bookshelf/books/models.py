@@ -89,3 +89,19 @@ class BookMark(models.Model):
 
     class Meta:
         unique_together = ['user', 'book']
+
+
+class PredictedBookMark(models.Model):
+    """
+    Хранит спрогнозированные оценки
+    """
+
+    # Максимальная оценка
+    MAX_MARK = 10
+
+    user = models.ForeignKey(User)
+    book = models.ForeignKey(Book)
+    mark = models.FloatField(default=0)
+
+    class Meta:
+        unique_together = ['user', 'book']

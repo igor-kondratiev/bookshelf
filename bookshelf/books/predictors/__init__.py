@@ -45,19 +45,9 @@ class AverageBookMarkPredictor(BasePredictor):
         self._book_marks = {}
 
         # Рассчитываем оценки
-        users_count = self._matrix.shape[0]
-        books_count = self._matrix.shape[1]
-        for book in range(books_count):
-            self._book_marks[book] = 0
-
-            count = 0
-            for user in range(users_count):
-                if self._matrix[user, book] > 0:
-                    self._book_marks[book] += self._matrix[user, book]
-                    count += 1
-
-            if count > 0:
-                self._book_marks[book] /= count
+        presence_matrix = np.where(self._matrix > 0, 1.0, 0)
+        counts = np.sum(presence_matrix, axis=0)
+        self._book_marks = np.nan_to_num(np.sum(self._matrix, axis=0) / counts)
 
     def predict(self, user, book):
         """
@@ -85,24 +75,20 @@ class UserToUserCollaborativeCosinePredictor(BasePredictor):
 
         for i in range(len(self._users_dict)):
             for j in range(i + 1, len(self._users_dict)):
-                x = 0.0
-                y = 0.0
-                x_dot_y = 0.0
+                vi = self._matrix[i]
+                vj = self._matrix[j]
 
-                count = 0
+                filtered_vi = np.where(vj > 0, vi, 0)
+                filtered_vj = np.where(vi > 0, vj, 0)
 
-                for k in range(len(self._books_dict)):
-                    if self._matrix[i, k] > 0 and self._matrix[j, k] > 0:
-                        x += self._matrix[i, k] * self._matrix[i, k]
-                        y += self._matrix[j, k] * self._matrix[j, k]
-                        x_dot_y += self._matrix[i, k] * self._matrix[j, k]
-                        count += 1
+                count = np.sum(np.where(filtered_vi * filtered_vj > 0, 1, 0))
 
-                if x > 0 and y > 0 and count > 2:
-                    x = sqrt(x)
-                    y = sqrt(y)
+                x = sqrt(np.sum(filtered_vi**2))
+                y = sqrt(np.sum(filtered_vj**2))
+
+                if x > 0 and y > 0 and count >= 6:
+                    x_dot_y = np.sum(filtered_vi*filtered_vj)
                     similarity = x_dot_y / (x * y)
-
                     self._similarities_matrix[i, j] = similarity
                     self._similarities_matrix[j, i] = similarity
 
@@ -134,7 +120,7 @@ class UserToUserCollaborativePiersonPredictor(BasePredictor):
     """
 
     # Минимальныцй уровень похожести для учета при прогнозировании
-    MINIMUM_SIMILARITY = 0.4
+    MINIMUM_SIMILARITY = 0.0
 
     def __init__(self, matrix, users_dict, books_dict):
         """
@@ -143,39 +129,32 @@ class UserToUserCollaborativePiersonPredictor(BasePredictor):
         super(UserToUserCollaborativePiersonPredictor, self).__init__(matrix, users_dict, books_dict)
 
         self._similarities_matrix = np.zeros([len(self._users_dict), len(self._users_dict)])
-        self._average_marks = np.zeros([len(self._users_dict)])
 
-        for u in range(len(self._users_dict)):
-            count = 0
-            for b in range(len(self._books_dict)):
-                if self._matrix[u, b] > 0:
-                    self._average_marks[u] += matrix[u, b]
-                    count += 1
-            self._average_marks[u] /= count
+        presence_matrix = np.where(self._matrix > 0, 1.0, 0)
+        counts = np.sum(presence_matrix, axis=1)
+        self._average_marks = np.nan_to_num(np.sum(self._matrix, axis=1) / counts)
 
         for i in range(len(self._users_dict)):
             for j in range(i + 1, len(self._users_dict)):
-                x = 0.0
-                y = 0.0
-                x_dot_y = 0.0
+                vi = self._matrix[i]
+                vj = self._matrix[j]
 
-                count = 0
+                filtered_vi = np.where(vj > 0, vi, 0)
+                filtered_vj = np.where(vi > 0, vj, 0)
 
-                for k in range(len(self._books_dict)):
-                    if self._matrix[i, k] > 0 and self._matrix[j, k] > 0:
-                        x += (self._matrix[i, k] - self._average_marks[i]) * (self._matrix[i, k] - self._average_marks[i])
-                        y += (self._matrix[j, k] - self._average_marks[j]) * (self._matrix[j, k] - self._average_marks[j])
-                        x_dot_y += (self._matrix[i, k] - self._average_marks[i]) * (self._matrix[j, k] - self._average_marks[j])
-                        count += 1
+                count = np.sum(np.where(filtered_vi * filtered_vj > 0, 1, 0))
 
-                similarity = 0.0
-                if x > 0 and y > 0 and count > 2:
-                    x = sqrt(x)
-                    y = sqrt(y)
+                filtered_vi -= np.ones(len(self._books_dict)) * self._average_marks[i]
+                filtered_vj -= np.ones(len(self._books_dict)) * self._average_marks[j]
+
+                x = sqrt(np.sum(filtered_vi**2))
+                y = sqrt(np.sum(filtered_vj**2))
+
+                if x > 0 and y > 0 and count >= 6:
+                    x_dot_y = np.sum(filtered_vi*filtered_vj)
                     similarity = x_dot_y / (x * y)
-
-                self._similarities_matrix[i, j] = similarity
-                self._similarities_matrix[j, i] = similarity
+                    self._similarities_matrix[i, j] = similarity
+                    self._similarities_matrix[j, i] = similarity
 
     def predict(self, user, book):
         """
@@ -192,7 +171,7 @@ class UserToUserCollaborativePiersonPredictor(BasePredictor):
                 predicted_mark += (self._matrix[u, book_index] - self._average_marks[u]) * self._similarities_matrix[user_index, u]
                 total_weights += self._similarities_matrix[user_index, u]
 
-        if total_weights > 0:
+        if total_weights != 0:
             predicted_mark /= total_weights
 
             predicted_mark += self._average_marks[user_index]
@@ -264,27 +243,22 @@ class ItemToItemCollaborativeCosinePredictor(BasePredictor):
 
         for i in range(len(self._books_dict)):
             for j in range(i + 1, len(self._books_dict)):
-                x = 0.0
-                y = 0.0
-                x_dot_y = 0.0
+                vi = self._matrix[:, i]
+                vj = self._matrix[:, j]
 
-                count = 0
+                filtered_vi = np.where(vj > 0, vi, 0)
+                filtered_vj = np.where(vi > 0, vj, 0)
 
-                for k in range(len(self._users_dict)):
-                    if self._matrix[k, i] > 0 and self._matrix[k, j] > 0:
-                        x += self._matrix[k, i] * self._matrix[k, i]
-                        y += self._matrix[k, j] * self._matrix[k, j]
-                        x_dot_y += self._matrix[k, i] * self._matrix[k, j]
-                        count += 1
+                count = np.sum(np.where(filtered_vi * filtered_vj > 0, 1, 0))
 
-                similarity = 0.0
-                if x > 0 and y > 0 and count > 2:
-                    x = sqrt(x)
-                    y = sqrt(y)
+                x = sqrt(np.sum(filtered_vi**2))
+                y = sqrt(np.sum(filtered_vj**2))
+
+                if x > 0 and y > 0 and count >= 6:
+                    x_dot_y = np.sum(filtered_vi*filtered_vj)
                     similarity = x_dot_y / (x * y)
-
-                self._similarities_matrix[i, j] = similarity
-                self._similarities_matrix[j, i] = similarity
+                    self._similarities_matrix[i, j] = similarity
+                    self._similarities_matrix[j, i] = similarity
 
     def predict(self, user, book):
         """
@@ -323,39 +297,33 @@ class ItemToItemCollaborativePiersonPredictor(BasePredictor):
         super(ItemToItemCollaborativePiersonPredictor, self).__init__(matrix, users_dict, books_dict)
 
         self._similarities_matrix = np.zeros([len(self._books_dict), len(self._books_dict)])
-        self._average_marks = np.zeros([len(self._books_dict)])
+        self._average_marks = np.zeros([len(self._users_dict)])
 
-        for b in range(len(self._books_dict)):
-            count = 0
-            for u in range(len(self._users_dict)):
-                if self._matrix[u, b] > 0:
-                    self._average_marks[b] += float(matrix[u, b])
-                    count += 1
-            self._average_marks[b] /= count
+        presence_matrix = np.where(self._matrix > 0, 1.0, 0)
+        counts = np.sum(presence_matrix, axis=1)
+        self._average_marks = np.nan_to_num(np.sum(self._matrix, axis=1) / counts)
 
         for i in range(len(self._books_dict)):
             for j in range(i + 1, len(self._books_dict)):
-                x = 0.0
-                y = 0.0
-                x_dot_y = 0.0
+                vi = self._matrix[:, i]
+                vj = self._matrix[:, j]
 
-                count = 0
+                filtered_vi = np.where(vj > 0, vi, 0)
+                filtered_vj = np.where(vi > 0, vj, 0)
 
-                for k in range(len(self._users_dict)):
-                    if self._matrix[k, i] > 0 and self._matrix[k, j] > 0:
-                        x += (self._matrix[k, i] - self._average_marks[i]) * (self._matrix[k, i] - self._average_marks[i])
-                        y += (self._matrix[k, j] - self._average_marks[j]) * (self._matrix[k, j] - self._average_marks[j])
-                        x_dot_y += (self._matrix[k, i] - self._average_marks[i]) * (self._matrix[k, j] - self._average_marks[j])
-                        count += 1
+                count = np.sum(np.where(filtered_vi * filtered_vj > 0, 1, 0))
 
-                similarity = 0.0
-                if x > 0 and y > 0 and count > 2:
-                    x = sqrt(x)
-                    y = sqrt(y)
+                filtered_vi -= self._average_marks
+                filtered_vj -= self._average_marks
+
+                x = sqrt(np.sum(filtered_vi**2))
+                y = sqrt(np.sum(filtered_vj**2))
+
+                if x > 0 and y > 0 and count >= 6:
+                    x_dot_y = np.sum(filtered_vi*filtered_vj)
                     similarity = x_dot_y / (x * y)
-
-                self._similarities_matrix[i, j] = similarity
-                self._similarities_matrix[j, i] = similarity
+                    self._similarities_matrix[i, j] = similarity
+                    self._similarities_matrix[j, i] = similarity
 
     def predict(self, user, book):
         """
@@ -369,28 +337,12 @@ class ItemToItemCollaborativePiersonPredictor(BasePredictor):
         total_weights = 0.0
         for b in range(len(self._books_dict)):
             if self._matrix[user_index, b] > 0 and self._similarities_matrix[book_index, b] > self.MINIMUM_SIMILARITY:
-                predicted_mark += (self._matrix[user_index, b] - self._average_marks[b]) * self._similarities_matrix[book_index, b]
+                predicted_mark += self._matrix[user_index, b] * self._similarities_matrix[book_index, b]
                 total_weights += self._similarities_matrix[book_index, b]
 
         if total_weights > 0:
             predicted_mark /= total_weights
-
-            predicted_mark += self._average_marks[book_index]
         else:
             predicted_mark = 0
 
         return predicted_mark
-
-
-class HybridPredictor(BasePredictor):
-    def __init__(self, matrix, users_dict, books_dict):
-        super(HybridPredictor, self).__init__(matrix, users_dict, books_dict)
-        self._utu_predictor = UserToUserCollaborativePiersonPredictor(matrix, users_dict, books_dict)
-        self._lsa_predictor = ItemToItemLSAPredictor(matrix, users_dict, books_dict)
-
-    def predict(self, user, book):
-        utu_mark = self._utu_predictor.predict(user, book)
-        lsa_mark = self._lsa_predictor.predict(user, book)
-        if utu_mark > 0 and lsa_mark > 0:
-            return 0.5 * utu_mark + 0.5 * lsa_mark
-        return max(utu_mark, lsa_mark)

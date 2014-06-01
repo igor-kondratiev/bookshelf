@@ -20,13 +20,15 @@ class Command(BaseCommand):
 
     # Список классов предикторов, которые нужно тестировать
     PREDICTORS = [
-        # 'books.predictors.ItemToItemCollaborativeCosinePredictor',
-        # 'books.predictors.ItemToItemCollaborativePiersonPredictor',
-        # 'books.predictors.ItemToItemLSAPredictor',
+        'books.predictors.ItemToItemCollaborativeCosinePredictor',
+        'books.predictors.ItemToItemCollaborativePiersonPredictor',
+        'books.predictors.ItemToItemLSAPredictor',
         'books.predictors.AverageBookMarkPredictor',
-        # 'books.predictors.UserToUserCollaborativeCosinePredictor',
+        'books.predictors.UserToUserCollaborativeCosinePredictor',
         'books.predictors.UserToUserCollaborativePiersonPredictor',
     ]
+
+    MINIMUM_MARKS_COUNT = 10
 
     @staticmethod
     def _load_predictor(name):
@@ -56,7 +58,7 @@ class Command(BaseCommand):
         self._books_dict = dict((book, index) for index, book in enumerate(self._books))
 
         # Теперь загружаем оценки
-        self._all_marks = list(BookMark.objects.all())
+        self._all_marks = list(BookMark.objects.filter(user__in=self._users))
 
         self._source_marks = []
         self._test_marks = []
@@ -64,7 +66,7 @@ class Command(BaseCommand):
             # У каждого пользователя, у которого не менее 8 оценок,
             # забираем 2 оценки в тестовую выборку
             marks_count = user.bookmark_set.count()
-            if marks_count < 12:
+            if marks_count < self.MINIMUM_MARKS_COUNT:
                 self._source_marks.extend(list(user.bookmark_set.all()))
                 continue
 

@@ -8,7 +8,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render, redirect
 
 from books.forms import RegistrationForm
-from books.models import Author, Book, BookGenre, BookMark
+from books.models import Author, Book, BookGenre, BookMark, PredictedBookMark
 
 
 def home_view(request):
@@ -87,7 +87,17 @@ def readable_books_view(request):
 
 
 def recommended_books_view(request):
-    return HttpResponse()
+    if request.user and request.user.is_authenticated():
+        mbooks_list = PredictedBookMark.objects.filter(user=request.user, mark__gte=7).order_by('-mark')[:20]
+        books_list = []
+        for m in mbooks_list:
+            books_list.append(m.book)
+    else:
+        books_list = []
+    return render(request, 'books_list.html', {
+        'books_list': books_list,
+        'title': 'Рекомендовані книги'
+    })
 
 
 def genres_list_view(request):

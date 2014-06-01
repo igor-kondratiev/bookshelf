@@ -18,7 +18,8 @@ class Command(BaseCommand):
     BASE_URL = 'http://www.e-reading.ws'
 
     BOOK_TYPES_TO_READ = 10
-    BOOKS_PER_TYPE = 10
+    BOOKS_PER_TYPE = 40
+    OFFSET = 10
 
     BOOKS_SUBDIR = 'e_reading'
 
@@ -122,6 +123,9 @@ class Command(BaseCommand):
                 continue
 
             for i, book in enumerate(books_list):
+                if i < self.OFFSET:
+                    continue
+
                 real_book = self._parse_book(book)
                 if real_book:
                     self._save_book(real_book)
